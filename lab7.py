@@ -17,10 +17,11 @@ default_dag_args = {
 }
 
 dataset_path_in_bucket = "{}/{}".format(models.Variable.get('dataset_name'), '{{ execution_date.strftime("%Y/%m/%d/%H") }}')
+cluster_name = 'composer-hadoop-tutorial-cluster-{{ execution_date.strftime("%Y%m%d%H") }}'
 
 
 with models.DAG(
-        'composer_lab',
+        'lab7_orchestration',
         schedule_interval="@hourly",
         default_args=default_dag_args,
         catchup=False
@@ -36,7 +37,7 @@ with models.DAG(
 
     create_dataproc_cluster = dataproc_operator.DataprocClusterCreateOperator(
         task_id='create_dataproc_cluster',
-        cluster_name='composer-hadoop-tutorial-cluster-{{ ds_nodash }}',
+        cluster_name=cluster_name,
         num_workers=2,
         region=models.Variable.get('gce_region'),
         zone=models.Variable.get('gce_zone'),
@@ -51,14 +52,14 @@ with models.DAG(
             '--input_path', 'gs://{}/{}'.format(models.Variable.get('input_bucket_name'), dataset_path_in_bucket),
             '--out_path', 'gs://{}/{}'.format(models.Variable.get('out_bucket_name'), '{{ execution_date.strftime("%Y/%m/%d/%H") }}')
         ],
-        cluster_name='composer-hadoop-tutorial-cluster-{{ ds_nodash }}',
+        cluster_name=cluster_name,
         region=models.Variable.get('gce_region'),
         zone=models.Variable.get('gce_zone'),
     )
 
     delete_dataproc_cluster = dataproc_operator.DataprocClusterDeleteOperator(
         task_id='delete_dataproc_cluster',
-        cluster_name='composer-hadoop-tutorial-cluster-{{ ds_nodash }}',
+        cluster_name=cluster_name,
         region=models.Variable.get('gce_region'),
         zone=models.Variable.get('gce_zone'),
         # Setting trigger_rule to ALL_DONE causes the cluster to be deleted
