@@ -28,7 +28,7 @@ with models.DAG(
 ) as dag:
 
     check_dataset_update = gcs_sensor.GoogleCloudStorageObjectSensor(
-        task_id='success_sensor_dataproc_hadoop',
+        task_id='check_dataset_update',
         bucket=models.Variable.get('input_bucket_name'),
         object="{}/{}".format(dataset_path_in_bucket, '_SUCCESS'),
         poke_interval=60,  # sec
